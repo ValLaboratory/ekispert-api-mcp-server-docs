@@ -78,7 +78,7 @@
 
 **共通設定**
 
-- `ekispert-api-access-key` には、駅すぱあと APIのアクセスキーを設定してください。
+- `ekispert-api-access-key` には、「駅すぱあと API」のアクセスキーを設定してください。
   - セキュリティの観点から、アクセスキーの値は直接設定するのではなく、環境変数（例: `EKISPERT_API_ACCESS_KEY` ）から取得する方法を推奨します。
 - `ekispert-api-response-format` には `json` または `xml` のいずれかが指定可能です（省略時は `json` ）。
 
@@ -95,7 +95,7 @@ MCPサーバーが正常に接続されているか確認するには、生成AI
 ```
 
 **期待される動作**:
-- MCPサーバーが駅すぱあと APIに問い合わせ
+- MCPサーバーが「駅すぱあと API」に問い合わせ
 - 経路情報（所要時間、運賃など）が返される
 - チャット履歴で `ekispert-api-mcp-server` のToolが実行されたことを確認できる
 
