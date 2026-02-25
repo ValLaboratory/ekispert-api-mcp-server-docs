@@ -140,6 +140,11 @@ IC運賃: 208円 (普通乗車券は210円)
 - [使用例（様々なプロンプトの例）](./docs/examples.md)
 - [トラブルシューティング](./docs/troubleshooting.md)
 
+## 試してみる・学ぶ
+
+- [「駅すぱあと API MCPサーバー」ハンズオン](https://github.com/ValLaboratory/ekispert-api-mcp-server-handson)
+- [「駅すぱあと API MCPサーバー」利用サンプル集](https://github.com/ValLaboratory/ekispert-api-mcp-server-samples)
+
 ## 利用規約
 
 本MCPサーバーは、「駅すぱあと API」に付随するサービスであり、「駅すぱあと API」の利用規約に準じます。
