@@ -149,6 +149,7 @@ Error: 'name' と 'code' は同時に指定できません。
 |----------|-----|-----|------|-----------:|
 | `viaList` | string | ○ | 出発駅・経由駅・目的駅のリスト | - |
 | `date` | number | - | 探索日付（YYYYMMDD） | 現在日付 |
+| `time` | string | - | 探索時刻（HHMM） | 現在時刻 |
 | `searchType` | string | - | 探索種別 | `"plain"` |
 | `sort` | string | - | ソート種別 | `"ekispert"` |
 | `answerCount` | number | - | 最大回答数（1〜20） | `5` |
@@ -161,9 +162,16 @@ Error: 'name' と 'code' は同時に指定できません。
 **入力値の制約**
 - `viaList`: 1文字以上の文字列が必須です。空文字列や未指定の場合はエラーになります。
 - `date`: 19700101〜99991231 の整数のみ受け付けます。桁数が不足している場合もエラーになります。
+- `time`: HHMM形式（00時00分〜26時59分）の文字列で指定してください。先頭2桁が24より大きい値は、翌日の午前0時から午前2時を指します（例: `2500` は翌日の1:00）。
+  - **注意**: `searchType` が `"plain"`, `"lastTrain"`, `"firstTrain"` の場合は `time` パラメータを指定できません。エラーになります。
 - `answerCount` / `searchCount`: 1〜20 の整数で指定してください。それ以外はエラーになります。
 - `conditionDetail`: `ekispert_api_generate_condition` Toolで生成された文字列（`T...:F...:A...:` 形式）を指定してください。それ以外はエラーになります。
   - 固定の条件を使用する場合、`ekispert_api_generate_condition` Toolを呼び出さずに、直接生成済みの文字列を指定することも可能です。
+
+> [!CAUTION]
+> `time` パラメータは、2026年6月までは既にお持ちのアクセスキーでもご利用可能です。
+> 2026年7月以降は専用のアクセスキーでのみご利用可能にする予定です（専用アクセスキーの取得方法については、今後改めてご案内予定です）。
+> また、ダイヤ情報を利用する場合は、別途時刻情報ライセンスが必要となる場合があります。実際のサービスでご利用される場合は、当社まで [お問い合わせ](info@val.co.jp) ください。
 
 #### `viaList` の指定方法
 
@@ -191,9 +199,22 @@ Error: 'name' と 'code' は同時に指定できません。
 
 | 値 | 説明 |
 |---|------|
-| `plain` | 平均待ち時間による探索（デフォルト） |
+| `plain` | 平均待ち時間による探索（平均待ち時間探索）。<br>時刻表を加味しないで目的地への色々な経路を探索します。**（デフォルト）** |
+| `departure` | ダイヤによる探索（発時刻探索）。早く到着し遅く出発する経路を優先して探索します。 |
+| `arrival` | ダイヤによる探索（着時刻探索）。遅く出発し早く到着する経路を優先して探索します。 |
+| `lastTrain` | ダイヤによる探索（終電探索）。指定された運行日の最終ダイヤの経路を優先して探索します。 |
+| `firstTrain` | ダイヤによる探索（始発探索）。運行日の始発ダイヤの経路を優先して探索します。 |
 
-**重要**: 平均探索（`searchType: "plain"`）のみ対応しています。そのため、具体的な出発時刻や到着時刻を指定した探索はできません。
+**ダイヤ探索について**:
+- `time` パラメータと組み合わせて使用することで、実際の出発時刻や到着時刻に基づいた正確な経路を取得できます
+- `departure` または `arrival` を指定する場合、`time` パラメータで時刻を指定できます（省略時は現在時刻）
+- `lastTrain` および `firstTrain` は `time` パラメータと同時指定できません
+- `searchType` 省略時に `time` を指定した場合は、自動的に `departure` として探索されます
+
+> [!CAUTION]
+> ダイヤ探索の機能（`departure`, `arrival`, `lastTrain`, `firstTrain`）は2026年6月までは既にお持ちのアクセスキーでもご利用可能です。
+> 2026年7月以降は専用のアクセスキーでのみご利用可能にする予定です（専用アクセスキーの取得方法については、今後改めてご案内予定です）。
+> また、ダイヤ情報を利用する場合は、別途時刻情報ライセンスが必要となる場合があります。実際のサービスでご利用される場合は、当社まで [お問い合わせ](info@val.co.jp) ください。
 
 #### `sort` に指定可能な値
 
@@ -224,9 +245,7 @@ Error: 'name' と 'code' は同時に指定できません。
 - 自然言語での利用例は [使用例](./examples.md#基本的な経路探索) を参照してください。
 - 下記はMCPクライアントから直接ツールを呼び出す際の例です。
 
-**注意**: 平均探索のみ対応しているため、「明日の12時発」のような具体的な時刻指定はできません。
-
-**基本的な経路探索**:
+**基本的な経路探索（平均待ち時間探索）**:
 ```json
 {
   "name": "ekispert_api_search_routes",
@@ -291,6 +310,52 @@ Error: 'name' と 'code' は同時に指定できません。
 }
 ```
 
+**ダイヤ探索（発時刻指定）**:
+```json
+{
+  "name": "ekispert_api_search_routes",
+  "arguments": {
+    "viaList": "東京:新宿",
+    "searchType": "departure",
+    "time": "0900"
+  }
+}
+```
+
+**ダイヤ探索（着時刻指定）**:
+```json
+{
+  "name": "ekispert_api_search_routes",
+  "arguments": {
+    "viaList": "東京:新宿",
+    "searchType": "arrival",
+    "time": "1800"
+  }
+}
+```
+
+**ダイヤ探索（終電）**:
+```json
+{
+  "name": "ekispert_api_search_routes",
+  "arguments": {
+    "viaList": "東京:新宿",
+    "searchType": "lastTrain"
+  }
+}
+```
+
+**ダイヤ探索（始発）**:
+```json
+{
+  "name": "ekispert_api_search_routes",
+  "arguments": {
+    "viaList": "東京:新宿",
+    "searchType": "firstTrain"
+  }
+}
+```
+
 ### エラー例
 
 #### viaList が未指定の場合
@@ -306,6 +371,26 @@ Error: 探索日付は1970年1月1日以降の日付を指定してください
 ```
 
 > **補足**: 「駅すぱあと API」がエラーステータスを返した場合、`status` / `message` を含むJSON形式でエラーが返されます。
+
+#### searchType と time の組み合わせが不正な場合
+
+`searchType` が `plain` の場合に `time` を指定した場合:
+
+```
+Error: 'time' は 'searchType' が 'plain' の場合指定できません。
+```
+
+`searchType` が `lastTrain` または `firstTrain` の場合に `time` を指定した場合:
+
+```
+Error: 'time' は 'searchType' が 'lastTrain' の場合指定できません。
+```
+
+または
+
+```
+Error: 'time' は 'searchType' が 'firstTrain' の場合指定できません。
+```
 
 ---
 
@@ -349,7 +434,7 @@ Error: 探索日付は1970年1月1日以降の日付を指定してください
 | `waitAverageTime` | string | 平均待ち時間の考慮 | `true`, `false` | `true` |
 | `transferTime` | string | 乗換時間の余裕 | `normal`, `moreMargin`, `mostMargin`, `lessMargin` | `normal` |
 | `surchargeKind` | string | 料金種別 | `free`, `reserved`, `green` | `free` |
-| `JRSeasonalRate` | string | JR季節料金の考慮 | `true`, `false` | `true` |
+| `JRSeasonalRate` | string | ＪＲ季節料金の考慮 | `true`, `false` | `true` |
 | `JRReservation` | string | EX予約/スマートEX | （下記参照） | `none` |
 | `shinkansenETicket` | string | 新幹線eチケット | `none`, `eTicket` | `none` |
 | `ticketSystemType` | string | 乗車券計算システム | `normal`, `ic` | `normal` |
@@ -370,28 +455,28 @@ Error: 探索日付は1970年1月1日以降の日付を指定してください
 | `smartExHayatoku1` | スマートＥＸ(ＥＸ早特１) |
 | `smartExHayatoku21` | スマートＥＸ(ＥＸ早特２１) |
 
-### 平均探索（searchType: "plain"）利用時の注意点
+### 探索種別による探索条件の扱いの違い
 
-`ekispert_api_search_routes` で `searchType: "plain"`（平均探索）を利用する場合、「駅すぱあと API」の仕様に基づき、生成した探索条件の一部のパラメータは以下のように扱われます。
+`ekispert_api_search_routes` で利用する探索条件は、探索種別（`searchType`）によって以下のような扱いの違いがあります。
 
-**平均探索でのみ有効なパラメータ**
+**平均待ち時間探索でのみ有効なパラメータ**
 
-以下のパラメータは、平均探索の場合のみ設定が反映されます。
+以下のパラメータは、平均待ち時間探索の場合のみ設定が反映されます。
 
 - `walk`
 - `waitAverageTime`
 
-**平均探索では無効になるパラメータ**
+**ダイヤ探索でのみ有効なパラメータ**
 
-以下のパラメータは、平均探索では指定しても無視されます。
+以下のパラメータは、ダイヤ探索の場合のみ設定が反映されます。
 
 - `liner`
 - `midnightBus`
 - `transferTime`
 
-**平均探索でのみ詳細な指定が有効な値**
+**平均待ち時間探索でのみ詳細な指定が有効な値**
 
-以下の交通手段設定における `light`（気軽に利用）や `bit`（極力利用しない）、`possible`（極力利用する）といった値は、平均探索でのみその効果を発揮します。その他の探索種別では、それぞれ `normal`（利用する）や `never`（利用しない）と同様に扱われます。
+以下の交通手段設定における `light`（気軽に利用）や `bit`（極力利用しない）、`possible`（極力利用する）といった値は、平均待ち時間探索でのみ有効です。その他の探索種別では、それぞれ `normal`（利用する）や `never`（利用しない）と同様に扱われます。
 
 - `plane` (`light`, `bit`)
 - `ship` (`light`, `bit`)
