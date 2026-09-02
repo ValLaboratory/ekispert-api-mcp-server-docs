@@ -292,6 +292,7 @@ Google Mapなど世界測地系を前提とする外部サービスと座標を�
 
 - `ekispert_api_get_stations`
 - `ekispert_api_get_stations_from_address`
+- `ekispert_api_get_stations_from_geo`
 - `ekispert_api_search_routes`
 
 なお `ekispert_api_get_stations` では、`simplify` が `"true"`（デフォルト）の場合は座標情報自体がレスポンスに含まれません。そのため `gcs` を指定するとエラーになります。座標情報を取得する場合は `simplify="false"` を合わせて指定してください。
