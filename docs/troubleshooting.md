@@ -278,3 +278,23 @@
 ### Q4: 座標や住所から経路探索できますか?
 
 **A**: はい、`viaList` パラメータで座標情報を指定できます。詳細は [利用可能な機能一覧](./features.md) を参照してください。住所情報については、「駅すぱあと API」の仕様に従って利用可能です。
+
+### Q5: 座標の測地系（日本測地系／世界測地系）は指定できますか？
+
+**A**: はい、`gcs` パラメータで指定できます。
+
+- `"wgs84"`: 世界測地系（**デフォルト**）
+- `"tokyo"`: 日本測地系
+
+Google Mapなど世界測地系を前提とする外部サービスと座標を連携する場合、デフォルトのまま利用できます。日本測地系の座標が必要な場合は `gcs="tokyo"` を明示的に指定してください。
+
+`gcs` に対応しているToolは以下のとおりです。
+
+- `ekispert_api_get_stations`
+- `ekispert_api_get_stations_from_address`
+- `ekispert_api_get_stations_from_geo`
+- `ekispert_api_search_routes`
+
+なお `ekispert_api_get_stations` では、`simplify` が `"true"`（デフォルト）の場合は座標情報自体がレスポンスに含まれません。そのため `gcs` を指定するとエラーになります。座標情報を取得する場合は `simplify="false"` を合わせて指定してください。
+
+詳細は [利用可能な機能一覧](./features.md) を参照してください。

@@ -74,6 +74,32 @@
 
 </details>
 
+<details><summary>Antigravity CLI の場合</summary>
+
+`mcp_config.json` の設定例:
+
+```json
+{
+  "mcpServers": {
+    "ekispert-api-mcp-server": {
+      "serverUrl": "https://api-mcp.ekispert.jp/mcp",
+      "headers": {
+        "ekispert-api-access-key": "YOUR_ACCESS_KEY_HERE",
+        "ekispert-api-response-format": "json"
+      }
+    }
+  }
+}
+```
+
+
+**注意**
+
+Antigravity CLI では、リモートのMCPサーバーを指定する際のキーは `serverUrl` です（`url` や `httpUrl` は使用できません）。<br>
+また、`headers` に指定した値の環境変数参照（`${...}` 形式）には対応していないため、アクセスキーは直接記載してください。設定ファイルをバージョン管理に含めないなど、取り扱いにご注意ください。
+
+</details>
+
 <br>
 
 **共通設定**
